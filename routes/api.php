@@ -21,6 +21,7 @@ Route::get('/user', function (Request $request) {
 Route::get('/medecins', [MedecinController::class, 'index']);
 Route::get('/medecins/{id}', [MedecinController::class, 'show']);
 
+
 // ======================
 // Routes Patient
 // ======================
@@ -35,6 +36,11 @@ Route::prefix('patient')->group(function () {
     });
 });
 
+Route::middleware('auth:medecin')->get('/medecin/appointments', [AppointmentController::class, 'doctorAppointments']);
+Route::middleware('auth:medecin')->patch('/medecin/appointments/{id}/confirm', [AppointmentController::class, 'confirm']);
+Route::middleware('auth:medecin')->patch('/medecin/appointments/{id}/reject', [AppointmentController::class, 'reject']);
+
+
 // ======================
 // Routes Médecin
 // ======================
@@ -48,12 +54,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/medecin/profile', [MedecinAuthController::class, 'profile']);
     Route::put('/medecin/profile', [MedecinAuthController::class, 'updateProfile']);
 });
+Route::middleware('auth:sanctum')->put('/medecin/working-hours', [MedecinController::class, 'updateWorkingHours']);
 
 Route::middleware('auth:patient')->post('/appointments', [AppointmentController::class, 'store']);
 Route::middleware('auth:patient')->get('/patient/appointments', [AppointmentController::class, 'index']);
 
 Route::middleware('auth:patient')->group(function () {
     Route::get('/messages/{medecinId}', [MessageController::class, 'getMessages']);
-    Route::post('/messages', [MessageController::class, 'sendMessage']);
+    Route::post('/messages/send', [MessageController::class, 'sendMessage']);
 });
-

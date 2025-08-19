@@ -57,4 +57,58 @@ class AppointmentController extends Controller
             'appointment' => $appointment,
         ]);
     }
+
+    // Récupérer tous les rendez-vous du médecin connecté
+    public function doctorAppointments()
+    {
+        $medecinId = Auth::guard('medecin')->id();
+
+        $appointments = Appointment::with('patient')
+            ->where('medecin_id', $medecinId)
+            ->orderBy('date', 'desc')
+            ->get()
+            ->map(function ($app) {
+                return [
+                    'id' => $app->id,
+                    'patient' => $app->patient
+                        ? $app->patient->prenom . ' ' . $app->patient->nom
+                        : 'Patient supprimé',
+                    'patient_id' => $app->patient ? $app->patient->id : null,
+                    'phone' => $app->patient ? $app->patient->telephone : null,
+                    'address' => $app->patient ? $app->patient->address : null,
+                    'date' => $app->date,
+                    'status' => $app->status,
+                    'consultation_type' => $app->consultation_type,
+                ];
+            });
+
+        return response()->json($appointments);
+    }
+
+
+    // Confirmer un rendez-vous
+    public function confirm($id)
+    {
+        $appointment = Appointment::where('id', $id)
+            ->where('medecin_id', Auth::guard('medecin')->id())
+            ->firstOrFail();
+
+        $appointment->status = 'confirmé';
+        $appointment->save();
+
+        return response()->json(['message' => 'Rendez-vous confirmé', 'appointment' => $appointment]);
+    }
+
+    // Refuser un rendez-vous
+    public function reject($id)
+    {
+        $appointment = Appointment::where('id', $id)
+            ->where('medecin_id', Auth::guard('medecin')->id())
+            ->firstOrFail();
+
+        $appointment->status = 'refusé';
+        $appointment->save();
+
+        return response()->json(['message' => 'Rendez-vous refusé', 'appointment' => $appointment]);
+    }
 }

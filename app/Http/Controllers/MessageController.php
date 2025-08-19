@@ -43,4 +43,21 @@ class MessageController extends Controller
             'data' => $message
         ]);
     }
+
+    public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'content' => 'required|string',
+        ]);
+
+        $message = new Message();
+        $message->content = $request->content;
+        $message->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message envoyé avec succès !',
+            'data' => $message
+        ]);
+    }
 }

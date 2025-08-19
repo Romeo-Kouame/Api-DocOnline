@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Medecin;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class MedecinController extends Controller
@@ -14,7 +16,7 @@ class MedecinController extends Controller
     // Retourne la liste de tous les médecins
     public function index()
     {
-        $medecins = Medecin::all(); 
+        $medecins = Medecin::all();
         return response()->json($medecins);
     }
 
@@ -75,5 +77,24 @@ class MedecinController extends Controller
     public function profile()
     {
         //
+    }
+
+    public function updateWorkingHours(Request $request)
+    {
+        $medecin = Auth::guard('medecin')->user();
+
+        $request->validate([
+            'working_hours' => 'required|array',
+            'working_hours.*.day' => 'required|string',
+            'working_hours.*.hours' => 'required|string',
+        ]);
+
+        $medecin->working_hours = $request->working_hours;
+        $medecin->save();
+
+        return response()->json([
+            'message' => 'Horaires de consultation mis à jour',
+            'working_hours' => $medecin->working_hours,
+        ]);
     }
 }
