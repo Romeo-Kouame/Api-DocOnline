@@ -33,7 +33,28 @@ class MedecinController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'email' => 'required|email|unique:medecins,email',
+            'password' => 'required|min:6',
+            'photo_profil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $data = $request->all();
+        $data['password'] = bcrypt($data['password']);
+
+        if ($request->hasFile('photo_profil')) {
+            $data['photo_profil'] = $request->file('photo_profil')->store('assets/images/medecins', 'public');
+        }
+
+        $medecin = Medecin::create($data);
+
+        return response()->json([
+            'message' => 'Médecin créé avec succès',
+            'data' => $medecin,
+            'photo_url' => $medecin->photo_profil ? asset('assets/images' . $medecin->photo_profil) : null
+        ]);
     }
 
     /**
@@ -61,9 +82,31 @@ class MedecinController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request, $id)
     {
         //
+        $medecin = Medecin::findOrFail($id);
+
+        $request->validate([
+            'nom' => 'sometimes|string|max:255',
+            'prenom' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:medecins,email,' . $medecin->id,
+            'photo_profil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $data = $request->all();
+
+        if ($request->hasFile('photo_profil')) {
+            $data['photo_profil'] = $request->file('photo_profil')->store('photos/medecins', 'public');
+        }
+
+        $medecin->update($data);
+
+        return response()->json([
+            'message' => 'Médecin mis à jour avec succès',
+            'data' => $medecin,
+            'photo_url' => $medecin->photo_profil ? asset('storage/' . $medecin->photo_profil) : null
+        ]);
     }
 
     /**
@@ -79,9 +122,11 @@ class MedecinController extends Controller
         //
     }
 
+
+    // Ici on affiche les mises à jour concernant les heures de travail du médecin 
     public function updateWorkingHours(Request $request)
     {
-        $medecin = Auth::guard('medecin')->user();
+        $medecin = Medecin::find(Auth::guard('medecin')->id());
 
         $request->validate([
             'working_hours' => 'required|array',

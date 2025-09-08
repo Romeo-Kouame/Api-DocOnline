@@ -11,7 +11,7 @@ class HandleCors
     public function handle(Request $request, Closure $next): Response
     {
         $allowedOrigins = [
-            'http://localhost:5173', // ton frontend React
+            'http://localhost:5174', // ton frontend React
         ];
 
         $origin = $request->headers->get('Origin');
