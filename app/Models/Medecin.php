@@ -21,11 +21,12 @@ class Medecin extends Authenticatable
         'bio',
         'password',
         'working_hours',
-        'years_experience',         
-        'languages',                
-        'professional_background',  
-        'consultation_price',       
-        'insurance_accepted'
+        'years_experience',
+        'languages',
+        'professional_background',
+        'consultation_price',
+        'insurance_accepted',
+        'photo_profil'
     ];
 
     protected $hidden = ['password'];

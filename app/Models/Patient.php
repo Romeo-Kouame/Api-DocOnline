@@ -12,9 +12,14 @@ class Patient extends Authenticatable
     use HasApiTokens, Notifiable, HasFactory;
 
     protected $fillable = [
-        'nom', 'prenom', 'email', 'telephone', 'address', 'password'
+        'nom',
+        'prenom',
+        'email',
+        'telephone',
+        'address',
+        'password',
+        'photo_profil'
     ];
 
     protected $hidden = ['password'];
 }
-

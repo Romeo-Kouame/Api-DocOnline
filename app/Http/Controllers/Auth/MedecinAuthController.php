@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Medecin;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class MedecinAuthController extends Controller
 {
@@ -21,9 +22,10 @@ class MedecinAuthController extends Controller
             'address' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
             'password' => 'required|string|min:6',
+            'photo_profil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $medecin = Medecin::create([
+        $data = [
             'nom' => $request->nom,
             'prenom' => $request->prenom,
             'email' => $request->email,
@@ -32,14 +34,21 @@ class MedecinAuthController extends Controller
             'address' => $request->address,
             'bio' => $request->bio,
             'password' => Hash::make($request->password),
-        ]);
+        ];
+
+        if ($request->hasFile('photo_profil')) {
+            $data['photo_profil'] = $request->file('photo_profil')->store('photos/medecins', 'public');
+        }
+
+        $medecin = Medecin::create($data);
 
         $token = $medecin->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'medecin' => $medecin
+            'medecin' => $medecin,
+            'photo_url' => $medecin->photo_profil ? asset('storage/' . $medecin->photo_profil) : null,
         ], 201);
     }
 
@@ -63,7 +72,8 @@ class MedecinAuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'medecin' => $medecin
+            'medecin' => $medecin,
+            'photo_url' => $medecin->photo_profil ? asset('storage/' . $medecin->photo_profil) : null,
         ]);
     }
 
@@ -84,10 +94,25 @@ class MedecinAuthController extends Controller
             'specialite' => 'sometimes|string|max:255',
             'address' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
+            'photo_profil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $medecin->update($request->all());
+        $data = $request->only(['nom','prenom','email','telephone','specialite','address','bio']);
 
-        return response()->json($medecin);
+        if ($request->hasFile('photo_profil')) {
+            // Supprimer ancienne photo
+            if ($medecin->photo_profil && Storage::disk('public')->exists($medecin->photo_profil)) {
+                Storage::disk('public')->delete($medecin->photo_profil);
+            }
+            $data['photo_profil'] = $request->file('photo_profil')->store('photos/medecins', 'public');
+        }
+
+        $medecin->update($data);
+
+        return response()->json([
+            'message' => 'Profil mis à jour avec succès',
+            'medecin' => $medecin,
+            'photo_url' => $medecin->photo_profil ? asset('storage/' . $medecin->photo_profil) : null,
+        ]);
     }
 }

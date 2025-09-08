@@ -11,7 +11,6 @@ return [
     | '*' autorise toutes les routes, mais vous pouvez limiter à '/api/*'.
     |
     */
-
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     /*
@@ -25,18 +24,17 @@ return [
     |
     */
 
-    'allowed_origins' => [
-        'http://localhost:5173',
-        'https://monfront.com', // mettre ton front en production
-    ],
-
+   
     /*
     |--------------------------------------------------------------------------
     | Origines autorisées avec regex
     |--------------------------------------------------------------------------
     */
 
-    'allowed_origins_patterns' => [],
+     'allowed_origins' => [
+        'http://localhost:5173',
+        // 'http://192.168.100.4:5173'
+    ],
 
     /*
     |--------------------------------------------------------------------------
