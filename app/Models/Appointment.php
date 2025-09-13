@@ -13,6 +13,7 @@ class Appointment extends Model
         'patient_id',
         'medecin_id',
         'date',
+        'time',
         'consultation_type',
         'status',
     ];
@@ -25,4 +26,3 @@ class Appointment extends Model
         return $this->belongsTo(Medecin::class, 'medecin_id');
     }
 }
-
